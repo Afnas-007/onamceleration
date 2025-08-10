@@ -300,6 +300,7 @@
             const modal = document.getElementById('modal');
             const modalCloseBtn = document.getElementById('modal-close-btn');
             const modalBody = document.getElementById('modal-body');
+            let uriyadiLeaderboard = [];
 
             const data = {
                 schedule: [
@@ -668,6 +669,7 @@
                 startBtn.addEventListener('click', () => {
                     let gameActive = false;
                     let score = 0;
+                    let playerName = '';
                     let timer;
                     let potInterval;
             
@@ -675,6 +677,12 @@
                         <div class="text-center">
                             <h3 class="text-2xl font-bold mb-4">Virtual Uriyadi</h3>
                             <div id="uriyadi-game-container">
+                                <div id="uriyadi-name-screen">
+                                    <p class="mb-4 text-lg">Enter your name to join the leaderboard!</p>
+                                    <input type="text" id="uriyadi-player-name" placeholder="Your Name" class="w-full max-w-xs px-4 py-2 border border-gray-300 rounded-full focus:ring-amber-500 focus:border-amber-500 mb-4">
+                                    <button id="uriyadi-start-game-btn" class="px-8 py-3 bg-green-500 text-white font-bold rounded-full hover:bg-green-600 text-xl">Start Game</button>
+                                </div>
+
                                 <div id="uriyadi-game-screen" class="hidden">
                                     <div id="uriyadi-canvas" class="game-canvas-container bg-sky-200">
                                         <svg id="uriyadiPot" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="absolute" style="width: 80px; height: 80px; top: 50%; left: 50%; transform: scale(1);">
@@ -684,32 +692,56 @@
                                     </div>
                                     <div class="mt-4 text-2xl font-bold">Score: <span id="uriyadi-score">0</span> | Time: <span id="uriyadi-time">15</span>s</div>
                                 </div>
-                                <div id="uriyadi-control-screen" class="flex flex-col items-center justify-center h-[350px]">
-                                    <h4 id="uriyadi-result-text" class="text-3xl font-bold gradient-text mb-4 hidden">Game Over!</h4>
-                                    <p id="uriyadi-final-score-text" class="text-xl mb-6 hidden"></p>
-                                    <button id="uriyadi-control-btn" class="px-8 py-3 bg-green-500 text-white font-bold rounded-full hover:bg-green-600 text-xl">Start Game</button>
+
+                                <div id="uriyadi-end-screen" class="hidden flex-col items-center justify-center pt-8">
+                                    <h4 class="text-3xl font-bold gradient-text mb-2">Game Over!</h4>
+                                    <p id="uriyadi-final-score-text" class="text-xl mb-6"></p>
+                                    <div id="uriyadi-leaderboard-container" class="w-full max-w-md"></div>
+                                    <button id="uriyadi-play-again-btn" class="mt-6 px-8 py-3 bg-blue-500 text-white font-bold rounded-full hover:bg-blue-600 text-xl">Play Again</button>
                                 </div>
                             </div>
                         </div>
                     `;
                     openModal(modalContent);
             
+                    const nameScreen = document.getElementById('uriyadi-name-screen');
                     const gameScreen = document.getElementById('uriyadi-game-screen');
-                    const controlScreen = document.getElementById('uriyadi-control-screen');
-                    const controlBtn = document.getElementById('uriyadi-control-btn');
-                    const resultText = document.getElementById('uriyadi-result-text');
+                    const endScreen = document.getElementById('uriyadi-end-screen');
+                    const startGameBtn = document.getElementById('uriyadi-start-game-btn');
+                    const playAgainBtn = document.getElementById('uriyadi-play-again-btn');
+                    const playerNameInput = document.getElementById('uriyadi-player-name');
                     const finalScoreText = document.getElementById('uriyadi-final-score-text');
+                    const leaderboardContainer = document.getElementById('uriyadi-leaderboard-container');
+                    
                     const pot = document.getElementById('uriyadiPot');
                     const canvas = document.getElementById('uriyadi-canvas');
                     const scoreEl = document.getElementById('uriyadi-score');
                     const timeEl = document.getElementById('uriyadi-time');
             
-                    function showGameScreen(show) {
-                        gameScreen.classList.toggle('hidden', !show);
-                        controlScreen.classList.toggle('hidden', show);
+                    function showScreen(screen) {
+                        nameScreen.classList.add('hidden');
+                        gameScreen.classList.add('hidden');
+                        endScreen.classList.add('hidden');
+                        screen.classList.remove('hidden');
+                    }
+
+                    function updateLeaderboard() {
+                        uriyadiLeaderboard.sort((a, b) => b.score - a.score);
+                        const top5 = uriyadiLeaderboard.slice(0, 5);
+                        let boardHtml = '<h5 class="text-xl font-bold text-amber-800 mb-2">Leaderboard</h5><ol class="list-decimal list-inside bg-amber-50 p-4 rounded-lg">';
+                        top5.forEach(player => {
+                            boardHtml += `<li class="text-lg text-left">${player.name}: ${player.score}</li>`;
+                        });
+                        boardHtml += '</ol>';
+                        leaderboardContainer.innerHTML = boardHtml;
                     }
             
                     function startGame() {
+                        playerName = playerNameInput.value.trim();
+                        if (!playerName) {
+                            alert("Please enter your name to start!");
+                            return;
+                        }
                         if (gameActive) return;
                         gameActive = true;
                         score = 0;
@@ -717,9 +749,7 @@
             
                         scoreEl.textContent = score;
                         timeEl.textContent = timeLeft;
-                        resultText.classList.add('hidden');
-                        finalScoreText.classList.add('hidden');
-                        showGameScreen(true);
+                        showScreen(gameScreen);
             
                         timer = setInterval(() => {
                             timeLeft--;
@@ -746,12 +776,12 @@
                         clearInterval(timer);
                         clearInterval(potInterval);
                         gameActive = false;
-            
-                        resultText.classList.remove('hidden');
+                        
+                        uriyadiLeaderboard.push({ name: playerName, score: score });
+                        updateLeaderboard();
+
                         finalScoreText.textContent = `Your final score is ${score}`;
-                        finalScoreText.classList.remove('hidden');
-                        controlBtn.textContent = 'Play Again';
-                        showGameScreen(false);
+                        showScreen(endScreen);
                     }
             
                     pot.addEventListener('click', () => {
@@ -762,7 +792,8 @@
                         setTimeout(() => { pot.style.transform = 'scale(1)'; }, 100);
                     });
             
-                    controlBtn.addEventListener('click', startGame);
+                    startGameBtn.addEventListener('click', startGame);
+                    playAgainBtn.addEventListener('click', () => showScreen(nameScreen));
                 });
             }
 
