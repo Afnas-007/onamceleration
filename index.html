@@ -93,7 +93,7 @@
                     <a href="#home" class="text-xl font-bold gradient-text">Onam @ IIM-K</a>
                 </div>
                 <div class="hidden md:block">
-                    <div class="ml-10 flex items-baseline space-x-2">
+                    <div class="ml-10 flex items-baseline space-x-8">
                         <a href="#home" class="nav-link active" data-section="home">Home</a>
                         <a href="#schedule" class="nav-link" data-section="schedule">Schedule & Venues</a>
                         <a href="#sadhya" class="nav-link" data-section="sadhya">Sadhya Corner</a>
@@ -150,20 +150,28 @@
         <section id="schedule" class="app-section py-16 md:py-24 bg-amber-50/50 hidden">
             <div class="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center mb-12">
-                    <h2 class="text-3xl md:text-4xl font-extrabold gradient-text">Schedule & Venues</h2>
-                    <p class="mt-3 max-w-2xl mx-auto text-lg text-gray-600">Your complete guide to the day's festivities. Click on an event to see more details, photos, and videos!</p>
+                    <h2 class="text-3xl md:text-4xl font-extrabold gradient-text">Schedule & Fun</h2>
+                    <p class="mt-3 max-w-2xl mx-auto text-lg text-gray-600">Your guide to the day's festivities and some cultural fun. Click an event for details!</p>
                 </div>
                 <div class="grid md:grid-cols-2 gap-12 items-start">
                     <div>
                         <h3 class="text-2xl font-bold mb-6 text-center text-amber-800">Event Timeline</h3>
                         <div id="schedule-list" class="space-y-6"></div>
                     </div>
-                    <div>
-                        <h3 class="text-2xl font-bold mb-6 text-center text-amber-800">Campus Venues Map</h3>
-                        <div class="relative rounded-lg shadow-lg overflow-hidden">
-                            <img src="https://placehold.co/800x600/e2e8f0/64748b?text=IIM+Kashipur+Campus+Map" alt="Campus Map" class="w-full h-auto">
+                    <div class="bg-white p-6 rounded-lg shadow-lg">
+                        <h3 class="text-2xl font-bold mb-6 text-center text-amber-800">Get Your Malayalam Name Badge</h3>
+                        <p class="text-center text-gray-600 mb-4">Enter your name to see it in Malayalam script and get a digital badge for the celebration!</p>
+                        <div class="flex flex-col items-center gap-4">
+                            <input type="text" id="name-input" placeholder="Enter your name here" class="w-full max-w-xs px-4 py-2 border border-gray-300 rounded-full focus:ring-amber-500 focus:border-amber-500">
+                            <button id="generate-badge-btn" class="px-6 py-2 bg-amber-500 text-white font-bold rounded-full hover:bg-amber-600">Generate Badge</button>
                         </div>
-                         <p class="text-sm text-gray-500 mt-2 text-center">A custom map with event locations marked will be displayed here.</p>
+                        <div id="badge-result" class="mt-6 hidden">
+                            <div class="w-full max-w-md mx-auto bg-gradient-to-br from-amber-400 to-orange-500 text-white p-6 rounded-xl shadow-2xl text-center">
+                                <p class="text-lg font-semibold">Happy Onam!</p>
+                                <p id="badge-english-name" class="text-3xl font-bold my-2"></p>
+                                <p id="badge-malayalam-name" class="font-malayalam text-4xl"></p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -652,7 +660,7 @@
                     document.getElementById('close-quiz-btn').addEventListener('click', closeModal);
                 }
             }
-            
+
             function setupUriyadi() {
                 const startBtn = document.getElementById('start-uriyadi-btn');
                 if (!startBtn) return;
@@ -669,7 +677,7 @@
                             <div id="uriyadi-game-container">
                                 <div id="uriyadi-game-screen" class="hidden">
                                     <div id="uriyadi-canvas" class="game-canvas-container bg-sky-200">
-                                        <svg id="uriyadiPot" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width: 80px; height: 80px; top: 50%; left: 50%; transform: scale(1);">
+                                        <svg id="uriyadiPot" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="absolute" style="width: 80px; height: 80px; top: 50%; left: 50%; transform: scale(1);">
                                             <path d="M20,30 A30,30 0 0,1 80,30 L85,80 A5,5 0 0,1 80,85 L20,85 A5,5 0 0,1 15,80 Z" fill="#8D5524"/>
                                             <path d="M25,30 Q50,20 75,30 L70,25 Q50,15 30,25 Z" fill="#A66C38"/>
                                         </svg>
@@ -758,6 +766,40 @@
                 });
             }
 
+            function setupNameBadgeGenerator() {
+                const nameInput = document.getElementById('name-input');
+                const generateBtn = document.getElementById('generate-badge-btn');
+                const badgeResult = document.getElementById('badge-result');
+                const badgeEnglishName = document.getElementById('badge-english-name');
+                const badgeMalayalamName = document.getElementById('badge-malayalam-name');
+
+                if (!nameInput || !generateBtn || !badgeResult) return;
+
+                const nameMap = {
+                    'priya': 'പ്രിയ',
+                    'rohan': 'രോഹൻ',
+                    'anjali': 'അഞ്ജലി',
+                    'amit': 'അമിത്',
+                    'sunita': 'സുനിത',
+                    'vikram': 'വിക്രം'
+                };
+
+                generateBtn.addEventListener('click', () => {
+                    const inputName = nameInput.value.trim().toLowerCase();
+                    const englishName = nameInput.value.trim();
+                    if (!inputName) return;
+
+                    const malayalamName = nameMap[inputName];
+                    badgeEnglishName.textContent = englishName;
+
+                    if (malayalamName) {
+                        badgeMalayalamName.textContent = malayalamName;
+                    } else {
+                        badgeMalayalamName.innerHTML = `<span class="text-sm">(Translation not available. <a href="https://translate.google.com/?sl=en&tl=ml&text=${englishName}&op=translate" target="_blank" class="underline">Try here</a>)</span>`;
+                    }
+                    badgeResult.classList.remove('hidden');
+                });
+            }
 
             function init() {
                 setupNav();
@@ -767,6 +809,7 @@
                 setupGalleries();
                 setupQuiz();
                 setupUriyadi();
+                setupNameBadgeGenerator();
 
                 const initialSection = window.location.hash ? window.location.hash.substring(1) : 'home';
                 showSection(initialSection);
