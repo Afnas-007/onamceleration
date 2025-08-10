@@ -415,7 +415,7 @@
             }
 
             function startCountdown() {
-                const countdownDate = new Date("Sep 15, 2025 00:00:00").getTime();
+                const countdownDate = new Date("Sep 7, 2025 00:00:00").getTime();
                 const countdownElement = document.getElementById('countdown');
                 if (!countdownElement) return;
 
@@ -655,74 +655,106 @@
             
             function setupUriyadi() {
                 const startBtn = document.getElementById('start-uriyadi-btn');
-                if(!startBtn) return;
-
-                let gameActive = false;
-                let score = 0;
-                let timer;
-                let potInterval;
-
+                if (!startBtn) return;
+            
                 startBtn.addEventListener('click', () => {
+                    let gameActive = false;
+                    let score = 0;
+                    let timer;
+                    let potInterval;
+            
                     const modalContent = `
                         <div class="text-center">
                             <h3 class="text-2xl font-bold mb-4">Virtual Uriyadi</h3>
-                            <div id="uriyadi-canvas" class="game-canvas-container bg-sky-200">
-                                <img id="uriyadiPot" src="https://placehold.co/80x80/854d0e/ffffff?text=Pot" alt="Pot" style="top: 50%; left: 50%;">
+                            <div id="uriyadi-game-container">
+                                <div id="uriyadi-game-screen" class="hidden">
+                                    <div id="uriyadi-canvas" class="game-canvas-container bg-sky-200">
+                                        <svg id="uriyadiPot" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width: 80px; height: 80px; top: 50%; left: 50%; transform: scale(1);">
+                                            <path d="M20,30 A30,30 0 0,1 80,30 L85,80 A5,5 0 0,1 80,85 L20,85 A5,5 0 0,1 15,80 Z" fill="#8D5524"/>
+                                            <path d="M25,30 Q50,20 75,30 L70,25 Q50,15 30,25 Z" fill="#A66C38"/>
+                                        </svg>
+                                    </div>
+                                    <div class="mt-4 text-2xl font-bold">Score: <span id="uriyadi-score">0</span> | Time: <span id="uriyadi-time">15</span>s</div>
+                                </div>
+                                <div id="uriyadi-control-screen" class="flex flex-col items-center justify-center h-[350px]">
+                                    <h4 id="uriyadi-result-text" class="text-3xl font-bold gradient-text mb-4 hidden">Game Over!</h4>
+                                    <p id="uriyadi-final-score-text" class="text-xl mb-6 hidden"></p>
+                                    <button id="uriyadi-control-btn" class="px-8 py-3 bg-green-500 text-white font-bold rounded-full hover:bg-green-600 text-xl">Start Game</button>
+                                </div>
                             </div>
-                            <div class="mt-4 text-2xl font-bold">Score: <span id="uriyadi-score">0</span> | Time: <span id="uriyadi-time">15</span>s</div>
-                            <button id="uriyadi-start-game" class="mt-4 px-6 py-2 bg-green-500 text-white font-bold rounded-full hover:bg-green-600">Start Game</button>
                         </div>
                     `;
                     openModal(modalContent);
-
-                    const gameStartBtn = document.getElementById('uriyadi-start-game');
+            
+                    const gameScreen = document.getElementById('uriyadi-game-screen');
+                    const controlScreen = document.getElementById('uriyadi-control-screen');
+                    const controlBtn = document.getElementById('uriyadi-control-btn');
+                    const resultText = document.getElementById('uriyadi-result-text');
+                    const finalScoreText = document.getElementById('uriyadi-final-score-text');
                     const pot = document.getElementById('uriyadiPot');
                     const canvas = document.getElementById('uriyadi-canvas');
                     const scoreEl = document.getElementById('uriyadi-score');
                     const timeEl = document.getElementById('uriyadi-time');
-
-                    gameStartBtn.addEventListener('click', () => {
+            
+                    function showGameScreen(show) {
+                        gameScreen.classList.toggle('hidden', !show);
+                        controlScreen.classList.toggle('hidden', show);
+                    }
+            
+                    function startGame() {
                         if (gameActive) return;
                         gameActive = true;
                         score = 0;
                         let timeLeft = 15;
+            
                         scoreEl.textContent = score;
                         timeEl.textContent = timeLeft;
-                        gameStartBtn.disabled = true;
-                        gameStartBtn.classList.add('opacity-50');
-
+                        resultText.classList.add('hidden');
+                        finalScoreText.classList.add('hidden');
+                        showGameScreen(true);
+            
                         timer = setInterval(() => {
                             timeLeft--;
                             timeEl.textContent = timeLeft;
                             if (timeLeft <= 0) {
-                                clearInterval(timer);
-                                clearInterval(potInterval);
-                                gameActive = false;
-                                gameStartBtn.disabled = false;
-                                gameStartBtn.classList.remove('opacity-50');
-                                alert(`Game Over! Your final score is ${score}`);
+                                endGame();
                             }
                         }, 1000);
-
+            
                         potInterval = setInterval(() => {
+                            if (!gameActive) return;
                             const canvasWidth = canvas.clientWidth;
                             const canvasHeight = canvas.clientHeight;
                             const potWidth = pot.clientWidth;
                             const potHeight = pot.clientHeight;
-
                             const newX = Math.random() * (canvasWidth - potWidth);
                             const newY = Math.random() * (canvasHeight - potHeight);
-
                             pot.style.left = `${newX}px`;
                             pot.style.top = `${newY}px`;
                         }, 800);
-                    });
-
+                    }
+            
+                    function endGame() {
+                        clearInterval(timer);
+                        clearInterval(potInterval);
+                        gameActive = false;
+            
+                        resultText.classList.remove('hidden');
+                        finalScoreText.textContent = `Your final score is ${score}`;
+                        finalScoreText.classList.remove('hidden');
+                        controlBtn.textContent = 'Play Again';
+                        showGameScreen(false);
+                    }
+            
                     pot.addEventListener('click', () => {
                         if (!gameActive) return;
                         score++;
                         scoreEl.textContent = score;
+                        pot.style.transform = 'scale(1.2)';
+                        setTimeout(() => { pot.style.transform = 'scale(1)'; }, 100);
                     });
+            
+                    controlBtn.addEventListener('click', startGame);
                 });
             }
 
