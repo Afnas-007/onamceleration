@@ -125,14 +125,14 @@
     </header>
 
     <main>
-        <section id="home" class="app-section min-h-screen flex items-center justify-center bg-cover bg-center" style="background-image: url('https://placehold.co/1920x1080/FFFBF0/4A2E0A?text=')">
+        <section id="home" class="app-section min-h-screen flex items-center justify-center bg-cover bg-center" style="background-image: url('https://placehold.co/1920x1080/FFFBF0/4A2E0A')">
             <div class="text-center p-4">
                 <h1 class="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight">
                     <span class="gradient-text">Onam Celebration 2025</span>
                 </h1>
                 <p class="mt-4 max-w-2xl mx-auto text-lg md:text-xl text-gray-700">Join the IIM Kashipur community for a vibrant celebration of culture, unity, and joy.</p>
                 
-                <img src="https://w0.peakpx.com/wallpaper/611/878/HD-wallpaper-onam-king-mahabali-thumbnail.jpg" 
+                <img src="http://googleusercontent.com/file_content/2" 
                      alt="King Mahabali" 
                      class="w-48 h-48 md:w-56 md:h-56 mx-auto rounded-full shadow-2xl my-8 border-4 border-amber-300 object-cover"
                      onerror="this.onerror=null;this.src='https://placehold.co/224x224/fef3c7/4a2e0a?text=Mahabali';">
@@ -653,31 +653,38 @@
             
             function setupQuiz() {
                 const startBtn = document.getElementById('start-quiz-btn');
-                if(!startBtn) return;
+                if (!startBtn) return;
+            
                 let currentQuizQuestions = [];
-
+                let quizActive = false;
+            
                 function shuffleAndPickQuestions() {
                     const shuffled = [...data.quiz.questions].sort(() => 0.5 - Math.random());
-                    currentQuizQuestions = shuffled.slice(0, 4); 
+                    currentQuizQuestions = shuffled.slice(0, 4);
                 }
-
-                startBtn.addEventListener('click', () => {
-                    shuffleAndPickQuestions();
-                    data.quiz.currentQ = 0;
-                    data.quiz.score = 0;
+            
+                function handleQuizAnswer(e) {
+                    if (!e.target.matches('.quiz-option-btn')) return;
+            
+                    const selectedIndex = parseInt(e.target.dataset.index);
+                    const qData = currentQuizQuestions[data.quiz.currentQ];
+                    if (selectedIndex === qData.correct) {
+                        data.quiz.score++;
+                    }
+                    data.quiz.currentQ++;
                     showQuizQuestion();
-                });
-
+                }
+            
                 function showQuizQuestion() {
                     if (data.quiz.currentQ >= currentQuizQuestions.length) {
                         showQuizResult();
                         return;
                     }
                     const qData = currentQuizQuestions[data.quiz.currentQ];
-                    const optionsHtml = qData.a.map((option, index) => 
+                    const optionsHtml = qData.a.map((option, index) =>
                         `<button class="quiz-option-btn block w-full text-left p-4 my-2 border rounded-lg hover:bg-amber-100 transition" data-index="${index}">${option}</button>`
                     ).join('');
-
+            
                     const modalContent = `
                         <div class="text-center">
                             <h3 class="text-2xl font-bold mb-2">Onam Quiz</h3>
@@ -687,30 +694,37 @@
                         </div>
                     `;
                     openModal(modalContent);
-                    
-                    document.querySelectorAll('.quiz-option-btn').forEach(btn => {
-                        btn.addEventListener('click', (e) => {
-                            const selectedIndex = parseInt(e.target.dataset.index);
-                            if (selectedIndex === qData.correct) {
-                                data.quiz.score++;
-                            }
-                            data.quiz.currentQ++;
-                            showQuizQuestion();
-                        });
-                    });
                 }
-                
+            
                 function showQuizResult() {
-                     const modalContent = `
+                    const modalContent = `
                         <div class="text-center">
                             <h3 class="text-3xl font-bold gradient-text">Quiz Complete!</h3>
                             <p class="text-xl my-6">You scored ${data.quiz.score} out of ${currentQuizQuestions.length}!</p>
-                            <button id="close-quiz-btn" class="px-6 py-2 bg-amber-500 text-white font-bold rounded-full hover:bg-amber-600">Close</button>
+                            <button id="close-quiz-btn" class="px-6 py-2 bg-amber-500 text-white font-bold rounded-full hover:bg-amber-600">Play Again</button>
                         </div>
                     `;
                     openModal(modalContent);
-                    document.getElementById('close-quiz-btn').addEventListener('click', closeModal);
                 }
+            
+                startBtn.addEventListener('click', () => {
+                    shuffleAndPickQuestions();
+                    data.quiz.currentQ = 0;
+                    data.quiz.score = 0;
+                    quizActive = true;
+                    showQuizQuestion();
+                });
+            
+                modalBody.addEventListener('click', (e) => {
+                    if (!quizActive) return;
+                    if (e.target.matches('.quiz-option-btn')) {
+                        handleQuizAnswer(e);
+                    }
+                    if (e.target.matches('#close-quiz-btn')) {
+                        quizActive = false;
+                        closeModal();
+                    }
+                });
             }
 
             function setupUriyadi() {
@@ -893,6 +907,7 @@
                 populateSchedule();
                 setupSadhya();
                 setupGalleries();
+                setupQuiz();
                 setupUriyadi();
                 setupNameBadgeGenerator();
 
